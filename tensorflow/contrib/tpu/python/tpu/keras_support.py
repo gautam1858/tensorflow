@@ -1461,6 +1461,7 @@ class KerasTPUModel(models.Model):
           initial_epoch=0,
           steps_per_epoch=None,
           validation_steps=None,
+          validation_freq=1,
           **kwargs):
     if context.executing_eagerly():
       raise EnvironmentError('KerasTPUModel currently does not support eager '
@@ -1529,7 +1530,7 @@ class KerasTPUModel(models.Model):
           return super(KerasTPUModel, self).fit(
               x, y, batch_size, epochs, verbose, callbacks, validation_split,
               validation_data, shuffle, class_weight, sample_weight,
-              initial_epoch, steps_per_epoch, validation_steps, **kwargs)
+              initial_epoch, steps_per_epoch, validation_steps,validation_freq, **kwargs)
         return self._pipeline_fit(x, y, batch_size, epochs, verbose, callbacks,
                                   validation_split, validation_data, shuffle,
                                   class_weight, sample_weight, initial_epoch,
@@ -1590,7 +1591,7 @@ class KerasTPUModel(models.Model):
   def _pipeline_fit(self, x, y, batch_size, epochs, verbose, callbacks,
                     validation_split, validation_data, shuffle, class_weight,
                     sample_weight, initial_epoch, steps_per_epoch,
-                    validation_steps, **kwargs):
+                    validation_steps,validation_freq, **kwargs):
     # Similar to super.fit(...), but modified to support software pipelining.
 
     # Backwards compatibility
@@ -1634,7 +1635,8 @@ class KerasTPUModel(models.Model):
         shuffle=shuffle,
         initial_epoch=initial_epoch,
         steps_per_epoch=steps_per_epoch,
-        validation_steps=validation_steps)
+        validation_steps=validation_steps,
+        validation_freq=validation_freq)
 
   def _pipeline_fit_loop(self,
                          inputs,
@@ -1650,7 +1652,8 @@ class KerasTPUModel(models.Model):
                          shuffle,
                          initial_epoch,
                          steps_per_epoch,
-                         validation_steps):
+                         validation_steps,
+                         validation_freq):
     self._make_train_function()
     sample_weights = sample_weights or []
     val_sample_weights = val_sample_weights or []
